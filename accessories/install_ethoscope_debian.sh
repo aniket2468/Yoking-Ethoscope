@@ -35,7 +35,7 @@ set -e  # Exit on any error
 # CONFIGURATION - MODIFY THESE FOR YOUR FORK
 #===============================================================================
 # Change this URL to your own ethoscope repository with yoking feature
-ETHOSCOPE_REPO_URL="https://github.com/YOUR_USERNAME/ethoscope-yoking.git"
+ETHOSCOPE_REPO_URL="https://github.com/aniket2468/Yoking-Ethoscope.git"
 # Branch to checkout (use 'main' for your fork, 'dev' for original)
 ETHOSCOPE_BRANCH="main"
 
