@@ -41,6 +41,7 @@ class BaseStimulator(DescribedObject):
         self._scheduler = Scheduler(date_range)
         self._hardware_connection = hardware_connection
         self._roi_template_config = roi_template_config
+        self.target_roi = None
 
         # Apply template overrides for ROI-to-channel mappings if available
         self._apply_template_overrides()

@@ -32,6 +32,11 @@
         };
         $scope.stimulatorSequence = []; // Array for stimulator sequence
 
+        // Yoke configuration for paired control experiments
+        $scope.yokeConfiguration = ''; // JSON string for yoke mapping (e.g., '{"1": "2", "3": "4"}')
+        $scope.showYokeHelp = false; // Toggle for yoke help section
+        $scope.yokeValidationError = null; // Validation error message for yoke input
+
         // Backup status cache
         $scope.backupSummary = null; // Cached backup summary to prevent digest loops
         $scope.lastBackupStatusLoad = 0; // Timestamp of last backup status load
@@ -911,6 +916,35 @@
                         arguments: {}
                     };
                 }
+            }
+
+            // Process yoke configuration for paired control experiments
+            if ($scope.yokeConfiguration && $scope.yokeConfiguration.trim() !== '') {
+                // Validate JSON format
+                try {
+                    var yokeData = JSON.parse($scope.yokeConfiguration);
+                    // Validate that it's an object with string keys and values
+                    if (typeof yokeData !== 'object' || yokeData === null || Array.isArray(yokeData)) {
+                        $scope.yokeValidationError = 'Yoke must be a JSON object like {"1": "2"}';
+                        manageSpinner('stop');
+                        return;
+                    }
+                    // Clear any previous error
+                    $scope.yokeValidationError = null;
+                    // Add yoke to options - backend expects {"yoke": {"value": "..."}}
+                    option.yoke = {
+                        value: $scope.yokeConfiguration.trim()
+                    };
+                    console.log('Yoke configuration set:', option.yoke);
+                } catch (e) {
+                    $scope.yokeValidationError = 'Invalid JSON format. Use format like {"1": "2", "3": "4"}';
+                    console.error('Yoke JSON parse error:', e);
+                    manageSpinner('stop');
+                    return;
+                }
+            } else {
+                // No yoke configuration - clear any error
+                $scope.yokeValidationError = null;
             }
 
             // Check if we need to handle custom template transfer for FileBasedROIBuilder

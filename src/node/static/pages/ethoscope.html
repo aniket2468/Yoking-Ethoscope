@@ -878,6 +878,44 @@
                         </div>
                         <hr>
                     </div>
+
+                    <!-- Yoke Configuration Section - Advanced sleep deprivation controls -->
+                    <div ng-if="stimulatorSequence && stimulatorSequence.length > 0" class="yoke-configuration-section" style="margin-bottom: 20px;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                            <h4 style="margin: 0;"><i class="fa fa-link"></i> Yoke Configuration</h4>
+                            <a href="" ng-click="showYokeHelp = !showYokeHelp" style="font-size: 12px;">
+                                <i class="fa" ng-class="showYokeHelp ? 'fa-minus-square-o' : 'fa-plus-square-o'"></i>
+                                {{showYokeHelp ? 'Hide help' : 'Show help'}}
+                            </a>
+                        </div>
+
+                        <div ng-if="showYokeHelp" class="alert alert-info" style="font-size: 13px; padding: 10px 15px; margin-bottom: 15px;">
+                            <p style="margin-bottom: 8px;"><strong>What is yoking?</strong></p>
+                            <p style="margin-bottom: 8px;">Yoking pairs a <em>yoked</em> (control) fly with a <em>focal</em> fly. The yoked fly receives stimulation based on the focal fly's behavior, not its own. This is used for yoked control experiments in sleep deprivation studies.</p>
+                            <p style="margin-bottom: 8px;"><strong>Format:</strong> JSON object mapping yoked ROI to focal ROI</p>
+                            <p style="margin-bottom: 0;"><code>{"yoked_roi": "focal_roi"}</code></p>
+                            <p style="margin-top: 8px; margin-bottom: 0;"><strong>Example:</strong> <code>{"1": "2", "3": "4"}</code><br>
+                            <small class="text-muted">ROI 1 follows ROI 2's behavior; ROI 3 follows ROI 4's behavior</small></p>
+                        </div>
+
+                        <div class="form-group" style="background-color: #f8f9fa; padding: 15px; border-radius: 6px; border-left: 4px solid #17a2b8;">
+                            <label for="yoke-input" style="font-weight: 500; margin-bottom: 8px;">
+                                <i class="fa fa-exchange-alt"></i> Yoke Mapping (optional)
+                            </label>
+                            <input type="text" class="form-control" id="yoke-input" 
+                                   ng-model="yokeConfiguration" 
+                                   placeholder='Leave empty for no yoking, or enter JSON e.g. {"1": "2", "3": "4"}'
+                                   style="font-family: monospace;">
+                            <small class="form-text text-muted" style="margin-top: 5px;">
+                                Leave empty if you don't need yoked controls. All ROIs not specified will be treated as focal (independent).
+                            </small>
+                            <div ng-if="yokeValidationError" class="text-danger" style="margin-top: 5px; font-size: 12px;">
+                                <i class="fa fa-exclamation-triangle"></i> {{yokeValidationError}}
+                            </div>
+                        </div>
+                        <hr>
+                    </div>
+
                     <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
                         <div ng-if="!isRoiTemplateSelected() || !isUserSelected()" class="alert alert-warning" style="margin-bottom: 0; margin-right: 15px; flex: 1; max-width: 60%;">
                             {{ (!isRoiTemplateSelected() && !isUserSelected()) ? 'A ROI mask and user must be selected.' :

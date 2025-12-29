@@ -164,7 +164,12 @@ class SleepDepStimulator(IsMovingStimulator):
         )
 
     def _decide(self):
-        roi_id = self._tracker._roi.idx
+        # Check if this is a yoked stimulator
+        if getattr(self, "target_roi", False):
+            roi_id = self.target_roi  # Use yoked fly's ROI for channel selection
+        else:
+            roi_id = self._tracker._roi.idx  # Normal: use own ROI
+        
         now = self._tracker.last_time_point
 
         try:
@@ -505,7 +510,11 @@ class MiddleCrossingStimulator(BaseStimulator):
         )
 
     def _decide(self):
-        roi_id = self._tracker._roi.idx
+        if getattr(self, "target_roi", False):
+            roi_id = self.target_roi  # Use yoked fly's ROI for channel selection
+        else:
+            roi_id = self._tracker._roi.idx  # Normal: use own ROI
+        
         now = self._tracker.last_time_point
         if now - self._last_stimulus_time < self._refractory_period * 1000:
             return HasInteractedVariable(False), {}
@@ -634,7 +643,11 @@ class OptomotorSleepDepriverSystematic(OptomotorSleepDepriver):
         self._t0 = 0
 
     def _decide(self):
-        roi_id = self._tracker._roi.idx
+        if getattr(self, "target_roi", False):
+            roi_id = self.target_roi  # Use yoked fly's ROI for channel selection
+        else:
+            roi_id = self._tracker._roi.idx  # Normal: use own ROI
+        
         try:
             channel = self._roi_to_channel[roi_id]
         except KeyError:
@@ -896,7 +909,11 @@ class AGO(SleepDepStimulator):
 
     def _decide(self):
 
-        roi_id = self._tracker._roi.idx
+        if getattr(self, "target_roi", False):
+            roi_id = self.target_roi  # Use yoked fly's ROI for channel selection
+        else:
+            roi_id = self._tracker._roi.idx  # Normal: use own ROI
+        
         now = self._tracker.last_time_point
 
         try:

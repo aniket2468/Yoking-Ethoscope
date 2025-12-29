@@ -161,6 +161,13 @@ class ControlThread(Thread):
                 },
             ),
             (
+                "yoke",
+                {
+                    "possible_classes": [],
+                    "default": "",
+                },
+            ),
+            (
                 "roi_builder",
                 {
                     "possible_classes": [FileBasedROIBuilder, TargetGridROIBuilder],
@@ -548,6 +555,10 @@ class ControlThread(Thread):
 
             self._option_dict[key]["class"] = Class
             self._option_dict[key]["kwargs"] = kwargs
+        if data and "yoke" in data:
+            self._yoke = data["yoke"].get("value", "")
+        else:
+            self._yoke = ""
 
     def _update_info(self):
         """
@@ -632,6 +643,7 @@ class ControlThread(Thread):
         StimulatorClass,
         stimulator_kwargs,
         time_offset=0,
+        yoke="",
     ):
 
         # Here the stimulator passes args. Hardware connection was previously open as thread.
@@ -663,6 +675,9 @@ class ControlThread(Thread):
         logging.info(f"Creating Monitor with {len(stimulators)} stimulators")
         for i, stimulator in enumerate(stimulators):
             logging.info(f"Stimulator {i+1}: {type(stimulator).__name__}")
+        
+        if yoke:
+            logging.info(f"Yoking configuration: {yoke}")
 
         self._monit = Monitor(
             camera,
@@ -672,6 +687,7 @@ class ControlThread(Thread):
             reference_points=reference_points,
             stimulators=stimulators,
             time_offset=time_offset,
+            yoke=yoke,
         )
 
         self._info["status"] = "running"
@@ -1079,6 +1095,8 @@ class ControlThread(Thread):
         # dbAppender handles append functionality and time offset internally
         if hasattr(rw, "append"):
             time_offset = rw.append()
+        
+        yoke = getattr(self, "_yoke", "")
 
         return (
             cam,
@@ -1091,6 +1109,7 @@ class ControlThread(Thread):
             StimulatorClass,
             stimulator_kwargs,
             time_offset,
+            yoke,
         )
 
     def _detect_and_store_targets(self, cam):
@@ -1258,6 +1277,7 @@ class ControlThread(Thread):
                 StimulatorClass,
                 stimulator_kwargs,
                 time_offset,
+                yoke,
             ) = tracking_setup
 
             # Initialization completed successfully
@@ -1276,6 +1296,7 @@ class ControlThread(Thread):
                     StimulatorClass,
                     stimulator_kwargs,
                     time_offset=time_offset,
+                    yoke=yoke,
                 )
 
             # self.stop()

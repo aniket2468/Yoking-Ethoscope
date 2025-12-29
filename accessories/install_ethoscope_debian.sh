@@ -32,6 +32,14 @@
 set -e  # Exit on any error
 
 #===============================================================================
+# CONFIGURATION - MODIFY THESE FOR YOUR FORK
+#===============================================================================
+# Change this URL to your own ethoscope repository with yoking feature
+ETHOSCOPE_REPO_URL="https://github.com/YOUR_USERNAME/ethoscope-yoking.git"
+# Branch to checkout (use 'main' for your fork, 'dev' for original)
+ETHOSCOPE_BRANCH="main"
+
+#===============================================================================
 # UTILITY FUNCTIONS
 #===============================================================================
 
@@ -146,16 +154,16 @@ install_ethoscope_software() {
 break-system-packages = true
 EOF
 
-    echo "Cloning ethoscope software repository..."
+    echo "Cloning ethoscope software repository from: $ETHOSCOPE_REPO_URL"
     if [[ -d "/opt/ethoscope" ]]; then
         echo "Removing existing /opt/ethoscope directory for clean installation..."
         rm -rf /opt/ethoscope
     fi
-    git clone https://github.com/gilestrolab/ethoscope.git /opt/ethoscope
+    git clone "$ETHOSCOPE_REPO_URL" /opt/ethoscope
 
-    echo "Configuring git repository (dev branch, node remote)..."
+    echo "Configuring git repository ($ETHOSCOPE_BRANCH branch, node remote)..."
     cd /opt/ethoscope/
-    git checkout dev
+    git checkout "$ETHOSCOPE_BRANCH"
     git remote set-url origin git://node/ethoscope.git
     git config --global --add safe.directory /opt/ethoscope
 

@@ -1,6 +1,7 @@
 __author__ = "quentin"
 
 import datetime
+import json
 import logging
 import time
 import traceback
@@ -18,6 +19,7 @@ class Monitor:
         reference_points=None,
         stimulators=None,
         time_offset=0,
+        yoke=None,
         *args,
         **kwargs,  # extra arguments for the tracker objects
     ):
@@ -42,6 +44,8 @@ class Monitor:
         :type reference_points: list
         :param stimulators: The class that will be used to analyse the position of the object and interact with the system/hardware.
         :type stimulators: list(:class:`~ethoscope.stimulators.stimulators.BaseInteractor`)
+        :param yoke: Pairs of focal (value) and yoked (key) region_ids as JSON string. Format: {"yoked_id": "focal_id"}
+        :type yoke: str
         :param time_offset: The time offset in milliseconds to start the experiment from.
         :type time_offset: int
         :param args: additional arguments passed to the tracking algorithm
@@ -66,10 +70,49 @@ class Monitor:
             ]
 
         elif len(stimulators) == len(rois):
-            self._unit_trackers = [
-                TrackingUnit(tracker_class, r, inter, *args, **kwargs)
-                for r, inter in zip(rois, stimulators)
-            ]
+            # if the user does not enter anything in yoke, yoke becomes "" (not None)
+            if yoke is None or yoke == "":
+                self._unit_trackers = [
+                    TrackingUnit(tracker_class, r, inter, *args, **kwargs)
+                    for r, inter in zip(rois, stimulators)
+                ]
+            else:
+                yoke = json.loads(yoke)
+                self._unit_trackers = [None for r in rois]
+                
+                # First, create focal tracking units
+                for f in yoke.values():
+                    ff = int(f)
+                    if self._unit_trackers[ff - 1] is None:
+                        self._unit_trackers[ff - 1] = TrackingUnit(
+                            tracker_class, rois[ff - 1], stimulators[ff - 1], *args, **kwargs
+                        )
+                
+                # Then create yoked tracking units
+                for y, f in yoke.items():
+                    yy = int(y)
+                    ff = int(f)
+                    self._unit_trackers[yy - 1] = TrackingUnit(
+                        tracker_class,
+                        rois[yy - 1],
+                        stimulators[yy - 1],
+                        *args,
+                        # CRITICAL: assign focal fly's tracker to yoked stimulator
+                        tracker=self._unit_trackers[ff - 1]._tracker,
+                        **kwargs,
+                    )
+                
+                # Finally, create any remaining non-yoked units (assumed focal)
+                for i, ut in enumerate(self._unit_trackers):
+                    if ut is None:
+                        self._unit_trackers[i] = TrackingUnit(
+                            tracker_class, rois[i], stimulators[i], *args, **kwargs
+                        )
+                
+                assert all(
+                    ut._tracker is not None for ut in self._unit_trackers
+                ), "All tracking units must have valid trackers"
+
         else:
             raise ValueError("You should have one interactor per ROI")
 
